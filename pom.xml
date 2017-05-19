@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>fr.jeci.alfresco-object-storage</groupId>
+  <version>1.0.0</version>
+  <artifactId>alfresco-object-storage-parent</artifactId>
+  <packaging>pom</packaging>
+  <name>Object Storage Connectors for Alfresco</name>
+  <description>Object Storage Connectors (Swift, Red Hat Ceph, OpenIO) for Alfresco</description>
+
+  <url>http://jeci.fr/</url>
+
+  <modules>
+    <module>alfresco-object-storage-commons</module>
+    <module>alfresco-ceph-rados</module>
+    <module>alfresco-openio</module>
+    <module>alfresco-swift</module>
+  </modules>
+
+  <parent>
+    <groupId>org.alfresco.maven</groupId>
+    <artifactId>alfresco-sdk-parent</artifactId>
+    <version>2.2.0</version>
+  </parent>
+
+  <properties>
+    <alfresco.version>5.2.f</alfresco.version>
+    <maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- Setup what versions of the different Alfresco artifacts that will be used (depends on alfresco.version),
+                 so we don't have to specify version in any of the dependency definitions in our POM.
+                 For more info see:
+                    http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Importing_Dependencies
+            -->
+      <dependency>
+        <groupId>${alfresco.groupId}</groupId>
+        <artifactId>alfresco-platform-distribution</artifactId>
+        <version>${alfresco.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <profiles>
+    <profile>
+      <id>enterprise</id>
+      <dependencies>
+        <dependency>
+          <groupId>${alfresco.groupId}</groupId>
+          <artifactId>alfresco-enterprise-repository</artifactId>
+          <version>${alfresco.version}</version>
+          <scope>provided</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
+</project>
