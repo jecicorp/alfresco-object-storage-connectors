@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+	Copyright 2016, 2017 - Jeci SARL - http://jeci.fr
+
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published 
+	by the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+	GNU Lesser General Public License for more details.
+
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program. If not, see http://www.gnu.org/licenses/.
+-->
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+	<bean id="openioService" class="fr.jeci.alfresco.openio.OpenIOServiceImpl"
+		init-method="init">
+		<property name="account" value="${openio.account}" />
+		<property name="container" value="${openio.container}" />
+		<property name="target" value="${openio.target}" />
+		<property name="namespace" value="${openio.namespace}" />
+	</bean>
+
+	<bean id="fileContentStore" class="fr.jeci.alfresco.ObjectStorageContentStore">
+		<property name="objectStorageService" ref="openioService" />
+		<property name="storeProtocole" value="openio" />
+	</bean>
+
+	<bean id="deletedContentStore" class="fr.jeci.alfresco.ObjectStorageContentStore">
+		<property name="objectStorageService" ref="openioService" />
+		<property name="storeProtocole" value="openio" />
+	</bean>
+</beans>

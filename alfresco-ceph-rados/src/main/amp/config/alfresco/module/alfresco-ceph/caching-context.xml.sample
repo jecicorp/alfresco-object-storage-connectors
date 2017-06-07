@@ -1,0 +1,104 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+	Copyright 2016, 2017 - Jeci SARL - http://jeci.fr
+
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published
+	by the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+	GNU Lesser General Public License for more details.
+
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program. If not, see http://www.gnu.org/licenses/.
+-->
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+	<bean id="radosService" class="fr.jeci.alfresco.ceph.RadosServiceImpl"
+		init-method="init">
+		<property name="configFile" value="${ceph.configFile}" />
+		<property name="id" value="${ceph.id}" />
+		<property name="pool" value="${ceph.pool}" />
+		<property name="clusterName" value="${ceph.clusterName}" />
+	</bean>
+
+	<!-- Caching Content Store -->
+	<bean id="fileContentStore" class="org.alfresco.repo.content.caching.CachingContentStore"
+		init-method="init">
+		<property name="backingStore" ref="radosContentStore" />
+		<property name="cache" ref="contentCache" />
+		<property name="cacheOnInbound" value="${system.content.caching.cacheOnInbound}" />
+		<property name="quota" ref="standardQuotaManager" />
+	</bean>
+
+	<!-- Delete content Store -->
+	<bean id="deletedContentStore" class="fr.jeci.alfresco.ObjectStorageContentStore">
+		<property name="objectStorageService" ref="radosService" />
+		<property name="storeProtocole" value="ceph" />
+	</bean>
+
+	<bean id="contentCache" class="org.alfresco.repo.content.caching.ContentCacheImpl">
+		<property name="memoryStore" ref="cachingContentStoreCache" />
+		<property name="cacheRoot" value="${dir.cachedcontent}" />
+	</bean>
+
+	<bean id="cachingContentStoreCache" factory-bean="cacheFactory"
+		factory-method="createCache">
+		<constructor-arg value="cache.cachingContentStoreCache" />
+	</bean>
+
+	<bean id="standardQuotaManager"
+		class="org.alfresco.repo.content.caching.quota.StandardQuotaStrategy"
+		init-method="init" destroy-method="shutdown">
+		<property name="maxUsageMB" value="${cachedcontent.maxUsageMB}" />
+		<property name="maxFileSizeMB" value="${cachedcontent.maxFileSizeMB}" />
+		<property name="cache" ref="contentCache" />
+		<property name="cleaner" ref="cachedContentCleaner" />
+	</bean>
+
+	<bean id="cachingContentStoreCleanerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass">
+			<value>org.alfresco.repo.content.caching.cleanup.CachedContentCleanupJob</value>
+		</property>
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="cachedContentCleaner">
+					<ref bean="cachedContentCleaner" />
+				</entry>
+			</map>
+		</property>
+	</bean>
+
+	<bean id="cachedContentCleaner"
+		class="org.alfresco.repo.content.caching.cleanup.CachedContentCleaner"
+		init-method="init">
+		<property name="minFileAgeMillis" value="${system.content.caching.minFileAgeMillis}" />
+		<property name="maxDeleteWatchCount"
+			value="${system.content.caching.maxDeleteWatchCount}" />
+		<property name="cache" ref="contentCache" />
+		<property name="usageTracker" ref="standardQuotaManager" />
+	</bean>
+
+	<bean id="cachingContentStoreCleanerTrigger" class="org.alfresco.util.CronTriggerBean">
+		<property name="jobDetail">
+			<ref bean="cachingContentStoreCleanerJobDetail" />
+		</property>
+		<property name="scheduler">
+			<ref bean="schedulerFactory" />
+		</property>
+		<property name="cronExpression">
+			<value>${system.content.caching.contentCleanup.cronExpression}</value>
+		</property>
+	</bean>
+
+	<bean id="radosContentStore" class="fr.jeci.alfresco.ObjectStorageContentStore">
+		<property name="objectStorageService" ref="radosService" />
+		<property name="storeProtocole" value="ceph" />
+	</bean>
+
+</beans>

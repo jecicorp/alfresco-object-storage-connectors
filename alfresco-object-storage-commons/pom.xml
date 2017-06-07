@@ -1,17 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>fr.jeci.alfresco-object-storage</groupId>
-  <artifactId>alfresco-object-storage-commons</artifactId>
-  <version>1.0</version>
-  <name>Rados Ceph Connector for Alfresco</name>
-  <packaging>jar</packaging>
-  <description>Rados Ceph (aka Red Hat Ceph Storage) module connector for Alfresco</description>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>alfresco-object-storage-commons</artifactId>
+	<version>1.0</version>
+	<name>Rados Ceph Connector for Alfresco</name>
+	<packaging>jar</packaging>
+	<description>Rados Ceph (aka Red Hat Ceph Storage) module connector for Alfresco</description>
 
-  <parent>
-    <groupId>fr.jeci.alfresco-object-storage</groupId>
-    <artifactId>alfresco-object-storage-parent</artifactId>
-    <version>1.0.0</version>
-  </parent>
+	<parent>
+		<groupId>fr.jeci.alfresco-object-storage</groupId>
+		<artifactId>alfresco-object-storage-parent</artifactId>
+		<version>1.0.0</version>
+	</parent>
+
+	<licenses>
+		<license>
+			<name>GNU Lesser General Public License v3.0 or later</name>
+			<url>http://www.gnu.org/licenses/lgpl-3.0-standalone.html</url>
+		</license>
+	</licenses>
+
+	<dependencies>
+		<dependency>
+			<groupId>${alfresco.groupId}</groupId>
+			<artifactId>alfresco-repository</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-buffer</artifactId>
+			<version>4.1.4.Final</version>
+		</dependency>
+	</dependencies>
 
 </project>

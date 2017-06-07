@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+	Copyright 2016, 2017 - Jeci SARL - http://jeci.fr
+
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published 
+	by the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+	GNU Lesser General Public License for more details.
+
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program. If not, see http://www.gnu.org/licenses/.
+-->
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+	<bean id="swiftService" class="fr.jeci.alfresco.swift.SwiftServiceImpl"
+		init-method="init">
+		<property name="username" value="${swift.username}" />
+		<property name="password" value="${swift.password}" />
+		<property name="url" value="${swift.url}" />
+		<property name="tenantId" value="${swift.tenantId}" />
+		<property name="tenantName" value="${swift.tenantName}" />
+		<property name="container" value="${swift.containerName}" />
+	</bean>
+
+	<bean id="fileContentStore" class="fr.jeci.alfresco.ObjectStorageContentStore">
+		<property name="objectStorageService" ref="swiftService" />
+		<property name="storeProtocole" value="swift" />
+	</bean>
+
+	<bean id="deletedContentStore" class="fr.jeci.alfresco.ObjectStorageContentStore">
+		<property name="objectStorageService" ref="swiftService" />
+		<property name="storeProtocole" value="swift" />
+	</bean>
+
+</beans>
