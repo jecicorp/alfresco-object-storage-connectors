@@ -64,12 +64,13 @@ public class CephContentReader extends AbstractContentReader {
 
 		} catch (RadosException e) {
 			logger.error(e.getMessage(), e);
-			return false;
 		} finally {
 			if (ioctx != null) {
 				this.rados.ioCtxDestroy(ioctx);
 			}
 		}
+
+		return false;
 	}
 
 	@Override
@@ -79,17 +80,20 @@ public class CephContentReader extends AbstractContentReader {
 		try {
 			ioctx = this.rados.ioCtxCreate(this.pool);
 			RadosObjectInfo stat = ioctx.stat(this.locator);
-			return stat.getMtime();
+			
+			if (stat != null) {
+				return stat.getMtime();
+			}
 
 		} catch (RadosException e) {
 			logger.error(e.getMessage(), e);
-			return 0L;
 		} finally {
-
 			if (ioctx != null) {
 				this.rados.ioCtxDestroy(ioctx);
 			}
 		}
+		
+		return 0L;
 	}
 
 	@Override
@@ -99,16 +103,20 @@ public class CephContentReader extends AbstractContentReader {
 		try {
 			ioctx = this.rados.ioCtxCreate(this.pool);
 			RadosObjectInfo stat = ioctx.stat(this.locator);
-			return stat.getSize();
+
+			if (stat != null) {
+				return stat.getSize();
+			}
 
 		} catch (RadosException e) {
 			logger.error(e.getMessage(), e);
-			return 0L;
 		} finally {
 			if (ioctx != null) {
 				this.rados.ioCtxDestroy(ioctx);
 			}
 		}
+
+		return 0L;
 	}
 
 	@Override
