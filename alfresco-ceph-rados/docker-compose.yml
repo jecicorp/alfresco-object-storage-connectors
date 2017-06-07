@@ -1,0 +1,135 @@
+version: '2'
+# CONFIGURATION POUR VPS SSD 3 de OVH
+# 2vCores, 8Go RAM, 40Go SSD
+volumes:
+  alf_logs:
+  alf_data:
+  share_logs:
+  solr_logs:
+  solr_data:
+  pgsql_data:
+  ceph-etc:
+
+
+networks:
+  alf-share:
+  internal:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.165.0/24
+          gateway: 192.168.165.1
+
+services:
+  alfresco:
+    image: jeci/alfresco-platform-ceph-rados
+    environment:
+      CATALINA_OPTS: "-Xms512m -Xmx1G -XX:+UseConcMarkSweepGC "
+    depends_on:
+      - postgresql
+      - libreoffice
+      - ceph
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 20000
+        hard: 40000
+    networks:
+      - alf-share
+      - internal
+    ports:
+      - "8081:8080"
+    volumes:
+      - "alf_logs:/usr/local/tomcat/logs/"
+      - "alf_data:/opt/alf_data"
+      - "ceph-etc:/etc/ceph"
+    tmpfs:
+      - /tmp
+      - /usr/local/tomcat/temp/:exec
+      - /usr/local/tomcat/work/
+
+
+  share:
+    image: jeci/alfresco-share:5.2.e
+    restart: always
+    environment:
+      CATALINA_OPTS: "-Xms512m -Xmx1G -XX:+UseConcMarkSweepGC "
+    depends_on:
+      - alfresco
+    networks:
+      - alf-share
+    ports:
+      - "8080:8080"
+    volumes:
+      - "share_logs:/usr/local/tomcat/logs/"
+    tmpfs:
+      - /tmp
+      - /usr/local/tomcat/temp/
+      - /usr/local/tomcat/work/
+
+  solr:
+    image: jeci/alfresco-solr:5.2.f
+    environment:
+      CATALINA_OPTS: "-Xms512m -Xmx1G -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:G1HeapRegionSize=8m -XX:MaxGCPauseMillis=200 "
+    depends_on:
+    - alfresco
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 20000
+        hard: 40000
+    networks:
+      - internal
+    volumes:
+      - "solr_logs:/usr/local/tomcat/logs/"
+      - "solr_data:/opt/solr_data"
+    tmpfs:
+      - /tmp
+      - /usr/local/tomcat/temp/
+      - /usr/local/tomcat/work/
+
+  postgresql:
+    image: postgres:9.4
+    environment:
+      - POSTGRES_DB=alfresco
+      - POSTGRES_PASSWORD=alfresco
+      - POSTGRES_USER=alfresco
+    networks:
+     - internal
+    volumes:
+      - "pgsql_data:/var/lib/postgresql/data"
+
+  libreoffice:
+    image: jeci/alfresco-libreoffice:5.2.7
+    restart: always
+    user: root
+    networks:
+      - internal
+
+  ceph:
+    image: ceph/demo
+    container_name: ceph-service
+    environment:
+      MON_IP: 192.168.165.10
+      CEPH_PUBLIC_NETWORK: 192.168.165.0/24
+    volumes:
+      - "ceph-etc:/etc/ceph"
+    networks:
+     internal:
+        ipv4_address: 192.168.165.10
+    stdin_open: true
+    tty: true
+
+  ceph-client:
+    image: ceph/rados
+    container_name: ceph-client
+    volumes:
+      - "ceph-etc:/etc/ceph"
+      - "./output:/output"
+    depends_on:
+      - ceph
+    networks:
+      - internal
+#    command: "mkpool alfresco"
+    command: "lspools"
