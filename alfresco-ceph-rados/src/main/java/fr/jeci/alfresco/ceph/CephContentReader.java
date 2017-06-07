@@ -34,7 +34,6 @@ public class CephContentReader extends AbstractContentReader {
 	private static final Log logger = LogFactory.getLog(CephContentReader.class);
 
 	private final Rados rados;
-	private final IoCTX ioctx;
 	private final String pool;
 	private final String locator;
 
@@ -43,10 +42,7 @@ public class CephContentReader extends AbstractContentReader {
 		this.rados = rados;
 		this.locator = locator;
 		this.pool = pool;
-		try {
-			this.ioctx = rados.ioCtxCreate(pool);
-		} catch (RadosException e) {
-			throw new IOException(e);
+
 		if (locator == null) {
 			throw new IllegalArgumentException("locator is null");
 		}
@@ -60,35 +56,51 @@ public class CephContentReader extends AbstractContentReader {
 
 	@Override
 	public boolean exists() {
+		IoCTX ioctx = null;
 		try {
-			RadosObjectInfo stat = this.ioctx.stat(locator);
+			ioctx = this.rados.ioCtxCreate(pool);
+			RadosObjectInfo stat = ioctx.stat(locator);
 			return stat != null;
+
 		} catch (RadosException e) {
+			logger.error(e.getMessage(), e);
 			return false;
 		} finally {
-			this.rados.ioCtxDestroy(this.ioctx);
+			if (ioctx != null) {
+				this.rados.ioCtxDestroy(ioctx);
+			}
 		}
-
 	}
 
 	@Override
 	public long getLastModified() {
+		IoCTX ioctx = null;
+
 		try {
-			RadosObjectInfo stat = this.ioctx.stat(locator);
+			ioctx = this.rados.ioCtxCreate(this.pool);
+			RadosObjectInfo stat = ioctx.stat(this.locator);
 			return stat.getMtime();
+
 		} catch (RadosException e) {
 			logger.error(e.getMessage(), e);
 			return 0L;
 		} finally {
-			this.rados.ioCtxDestroy(this.ioctx);
+
+			if (ioctx != null) {
+				this.rados.ioCtxDestroy(ioctx);
+			}
 		}
 	}
 
 	@Override
 	public long getSize() {
+		IoCTX ioctx = null;
+
 		try {
-			RadosObjectInfo stat = this.ioctx.stat(locator);
+			ioctx = this.rados.ioCtxCreate(this.pool);
+			RadosObjectInfo stat = ioctx.stat(this.locator);
 			return stat.getSize();
+
 		} catch (RadosException e) {
 			logger.error(e.getMessage(), e);
 			return 0L;
@@ -102,7 +114,7 @@ public class CephContentReader extends AbstractContentReader {
 	@Override
 	protected ContentReader createReader() {
 		try {
-			return new CephContentReader(rados, pool, locator);
+			return new CephContentReader(this.rados, this.pool, this.locator);
 		} catch (IOException e) {
 			throw new ContentIOException(e.getMessage(), e);
 		}
@@ -110,7 +122,7 @@ public class CephContentReader extends AbstractContentReader {
 
 	@Override
 	protected ReadableByteChannel getDirectReadableChannel() {
-		return new RadosReadableByteChannel(rados, pool, locator);
+		return new RadosReadableByteChannel(this.rados, this.pool, this.locator);
 	}
 
 }
