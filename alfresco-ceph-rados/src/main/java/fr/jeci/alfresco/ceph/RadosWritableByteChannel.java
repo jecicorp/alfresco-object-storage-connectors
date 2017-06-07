@@ -31,7 +31,7 @@ public class RadosWritableByteChannel extends AbstractInterruptibleChannel imple
 
 	private IoCTX io = null;
 
-	private byte buf[] = new byte[0];
+	private byte[] buf = new byte[0];
 	// 128k
 	private static final int TRANSFER_SIZE = 131072;
 	private Object writeLock = new Object();
@@ -84,8 +84,8 @@ public class RadosWritableByteChannel extends AbstractInterruptibleChannel imple
 
 	@Override
 	protected void implCloseChannel() throws IOException {
-		if (this.rados != null) {
-			this.rados.ioCtxDestroy(io);
+		if (this.io != null) {
+			this.rados.ioCtxDestroy(this.io);
 		}
 	}
 

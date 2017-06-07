@@ -53,17 +53,17 @@ public class RadosServiceImpl implements ObjectStorageService {
 			logger.info("id : " + this.id);
 		}
 
-		rados = new Rados(this.clusterName, this.id, 0);
+		this.rados = new Rados(this.clusterName, this.id, 0);
 		File file = new File(this.configFile);
 		if (file.exists()) {
 			if (logger.isDebugEnabled()) {
 				logger.debug("Load Rados Conf " + this.configFile);
 			}
-			rados.confReadFile(file);
+			this.rados.confReadFile(file);
 		} else {
 			logger.error("File " + this.configFile + " not found");
 		}
-		rados.connect();
+		this.rados.connect();
 		logger.info(printRadosStats(rados));
 	}
 
@@ -106,7 +106,9 @@ public class RadosServiceImpl implements ObjectStorageService {
 			logger.error(e.getMessage(), e);
 			return false;
 		} finally {
-			this.rados.ioCtxDestroy(io);
+			if (io != null) {
+				this.rados.ioCtxDestroy(io);
+			}
 		}
 	}
 

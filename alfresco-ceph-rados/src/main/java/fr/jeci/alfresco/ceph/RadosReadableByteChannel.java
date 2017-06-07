@@ -30,14 +30,14 @@ import com.ceph.rados.exceptions.RadosException;
 public class RadosReadableByteChannel extends AbstractInterruptibleChannel implements ReadableByteChannel {
 
 	private static final int TRANSFER_SIZE = 8192;
-	private byte buf[] = new byte[0];
+	private byte[] buf = new byte[0];
 	private Object readLock = new Object();
 	private final String locator;
 
 	private IoCTX io;
 	private Rados rados;
 
-	// Offest of bye read from rados
+	// Offest of byte read from rados
 	private int offset = 0;
 	// Number of byte read from rados
 	private int count;
@@ -99,7 +99,9 @@ public class RadosReadableByteChannel extends AbstractInterruptibleChannel imple
 
 	@Override
 	protected void implCloseChannel() throws IOException {
-		this.rados.ioCtxDestroy(io);
+		if (this.io != null) {
+			this.rados.ioCtxDestroy(this.io);
+		}
 	}
 
 }

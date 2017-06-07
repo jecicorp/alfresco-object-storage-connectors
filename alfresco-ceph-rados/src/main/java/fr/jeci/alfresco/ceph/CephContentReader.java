@@ -93,7 +93,9 @@ public class CephContentReader extends AbstractContentReader {
 			logger.error(e.getMessage(), e);
 			return 0L;
 		} finally {
-			this.rados.ioCtxDestroy(this.ioctx);
+			if (ioctx != null) {
+				this.rados.ioCtxDestroy(ioctx);
+			}
 		}
 	}
 
