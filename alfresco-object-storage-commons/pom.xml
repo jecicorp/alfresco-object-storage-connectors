@@ -3,10 +3,10 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>alfresco-object-storage-commons</artifactId>
-	<version>1.0</version>
-	<name>Rados Ceph Connector for Alfresco</name>
+	<version>1.0.0</version>
+	<name>Object Storage Commons Libs</name>
 	<packaging>jar</packaging>
-	<description>Rados Ceph (aka Red Hat Ceph Storage) module connector for Alfresco</description>
+	<description>Object Storage Commons Libs for Alfresco connectors</description>
 
 	<parent>
 		<groupId>fr.jeci.alfresco-object-storage</groupId>
