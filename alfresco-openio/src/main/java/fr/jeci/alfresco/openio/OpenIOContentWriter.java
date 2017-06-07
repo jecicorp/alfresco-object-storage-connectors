@@ -1,6 +1,5 @@
 package fr.jeci.alfresco.openio;
 
-
 /*  Copyright 2016, 2017 - Jeci SARL - http://jeci.fr
 
     This program is free software: you can redistribute it and/or modify
@@ -31,12 +30,15 @@ import io.openio.sds.models.OioUrl;
 public class OpenIOContentWriter extends AbstractContentWriter {
 	private Client client;
 	private OioUrl oioUrl;
-	private long size;
+
+	private final OpenIOChannel channel;
 
 	protected OpenIOContentWriter(Client client, OioUrl urlFile) {
 		super(urlFile.object(), null);
 		this.client = client;
 		this.oioUrl = urlFile;
+
+		this.channel = new OpenIOChannel(this.client, this.oioUrl);
 	}
 
 	@Override
@@ -46,16 +48,12 @@ public class OpenIOContentWriter extends AbstractContentWriter {
 
 	@Override
 	protected WritableByteChannel getDirectWritableChannel() {
-		return new OpenIOChannel(this.client, this.oioUrl);
+		return this.channel;
 	}
 
 	@Override
 	public long getSize() {
-		return this.size;
-	}
-
-	public void setSize(long size) {
-		this.size = size;
+		return this.channel.getSize();
 	}
 
 }

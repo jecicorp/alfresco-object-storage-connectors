@@ -34,7 +34,7 @@ public class OpenIOChannel extends ByteBufWritableByteChannel {
 
 	@Override
 	protected void implCloseChannel(ByteBuf buffer) {
-		Long size = new Long(buffer.writerIndex() - buffer.readerIndex());
+		long size = (long) (buffer.writerIndex() - buffer.readerIndex());
 		this.client.putObject(oioUrl, size, new ByteBufInputStream(buffer));
 	}
 

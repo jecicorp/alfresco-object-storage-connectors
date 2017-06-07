@@ -28,11 +28,15 @@ public abstract class ByteBufWritableByteChannel extends AbstractInterruptibleCh
 
 	private ByteBuf buffer = Unpooled.buffer(0, Integer.MAX_VALUE);
 
+	private long size = 0L;
+
 	@Override
 	public int write(ByteBuffer src) throws IOException {
 		int start = this.buffer.writerIndex();
 		this.buffer.writeBytes(src);
-		return this.buffer.writerIndex() - start;
+		int written = this.buffer.writerIndex() - start;
+		this.size += written;
+		return written;
 	}
 
 	@Override
@@ -42,6 +46,13 @@ public abstract class ByteBufWritableByteChannel extends AbstractInterruptibleCh
 		} finally {
 			this.buffer.release();
 		}
+	}
+
+	/**
+	 * @return Total byte written
+	 */
+	public long getSize() {
+		return size;
 	}
 
 	protected abstract void implCloseChannel(ByteBuf buffer);

@@ -24,11 +24,14 @@ import org.javaswift.joss.model.StoredObject;
 
 public class SwiftContentWriter extends AbstractContentWriter {
 	private StoredObject storedObject;
-	private long size = 0L;
+
+	private final SwiftChannel channel;
 
 	public SwiftContentWriter(StoredObject object) {
 		super(object.getName(), null);
 		this.storedObject = object;
+		this.channel = new SwiftChannel(storedObject);
+
 	}
 
 	@Override
@@ -43,14 +46,7 @@ public class SwiftContentWriter extends AbstractContentWriter {
 
 	@Override
 	public long getSize() {
-		return this.size;
+		return this.channel.getSize();
 	}
 
-	public void setSize(long size) {
-		this.size = size;
-	}
-
-	public StoredObject getStoredObject() {
-		return storedObject;
-	}
 }
