@@ -50,6 +50,9 @@ public class CephContentReader extends AbstractContentReader {
 		if (pool == null) {
 			throw new IllegalArgumentException("pool is null");
 		}
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("Ceph Content Reader for " + locator + " in " + pool);
 		}
 
 	}

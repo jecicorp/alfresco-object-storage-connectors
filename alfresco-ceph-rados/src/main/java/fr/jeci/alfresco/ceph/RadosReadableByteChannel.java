@@ -22,12 +22,15 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.spi.AbstractInterruptibleChannel;
 
 import org.alfresco.service.cmr.repository.ContentIOException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.ceph.rados.IoCTX;
 import com.ceph.rados.Rados;
 import com.ceph.rados.exceptions.RadosException;
 
 public class RadosReadableByteChannel extends AbstractInterruptibleChannel implements ReadableByteChannel {
+	private static final Log logger = LogFactory.getLog(RadosReadableByteChannel.class);
 
 	private static final int TRANSFER_SIZE = 8192;
 	private byte[] buf = new byte[0];
@@ -61,6 +64,8 @@ public class RadosReadableByteChannel extends AbstractInterruptibleChannel imple
 		int totalRead = 0;
 		int bytesRead = 0;
 		synchronized (this.readLock) {
+			long start = System.currentTimeMillis();
+
 			try {
 				while (totalRead < remaining) {
 					int bytesToRead = Math.min(remaining - totalRead, TRANSFER_SIZE);
@@ -92,6 +97,10 @@ public class RadosReadableByteChannel extends AbstractInterruptibleChannel imple
 					}
 
 				}
+
+				if (logger.isDebugEnabled()) {
+					logger.debug("# Rados read " + this.locator + " " + totalRead + " bytes in "
+							+ (System.currentTimeMillis() - start) + " ms");
 				}
 
 				if ((bytesRead <= 0) && (totalRead == 0)) {

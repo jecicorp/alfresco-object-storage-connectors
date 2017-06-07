@@ -22,12 +22,15 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.channels.spi.AbstractInterruptibleChannel;
 
 import org.alfresco.service.cmr.repository.ContentIOException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.ceph.rados.IoCTX;
 import com.ceph.rados.Rados;
 import com.ceph.rados.exceptions.RadosException;
 
 public class RadosWritableByteChannel extends AbstractInterruptibleChannel implements WritableByteChannel {
+	private static final Log logger = LogFactory.getLog(RadosWritableByteChannel.class);
 
 	private IoCTX io = null;
 
@@ -54,6 +57,8 @@ public class RadosWritableByteChannel extends AbstractInterruptibleChannel imple
 		int len = src.remaining();
 		int totalWritten = 0;
 		synchronized (this.writeLock) {
+			long start = System.currentTimeMillis();
+
 			try {
 				while (totalWritten < len) {
 					int bytesToWrite = Math.min((len - totalWritten), TRANSFER_SIZE);
@@ -71,11 +76,17 @@ public class RadosWritableByteChannel extends AbstractInterruptibleChannel imple
 					}
 					totalWritten += bytesToWrite;
 				}
-				
+
 				if (this.offset == 0) {
 					/* Create empty object */
 					this.io.write(this.locator, "", this.offset);
 				}
+
+				if (logger.isDebugEnabled()) {
+					logger.debug("# Rados write " + this.locator + " " + totalWritten + " bytes in "
+							+ (System.currentTimeMillis() - start) + " ms");
+				}
+
 			} catch (RadosException e) {
 				throw new IOException(e);
 			}
