@@ -62,7 +62,7 @@ public class RadosReadableByteChannel extends AbstractInterruptibleChannel imple
 		int len = dst.remaining();
 		int totalRead = 0;
 		int bytesRead = 0;
-		synchronized (readLock) {
+		synchronized (this.readLock) {
 			try {
 				while (totalRead < len) {
 					int bytesToRead = Math.min((len - totalRead), TRANSFER_SIZE);

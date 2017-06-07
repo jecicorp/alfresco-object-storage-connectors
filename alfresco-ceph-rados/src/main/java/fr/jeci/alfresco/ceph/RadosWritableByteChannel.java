@@ -53,27 +53,28 @@ public class RadosWritableByteChannel extends AbstractInterruptibleChannel imple
 	public int write(ByteBuffer src) throws IOException {
 		int len = src.remaining();
 		int totalWritten = 0;
-		synchronized (writeLock) {
+		synchronized (this.writeLock) {
 			try {
 				while (totalWritten < len) {
 					int bytesToWrite = Math.min((len - totalWritten), TRANSFER_SIZE);
-					if (buf.length != bytesToWrite) {
-						buf = new byte[bytesToWrite];
+					if (this.buf.length != bytesToWrite) {
+						this.buf = new byte[bytesToWrite];
 					}
 
-					src.get(buf, 0, bytesToWrite);
+					src.get(this.buf, 0, bytesToWrite);
 					try {
 						begin();
-						io.write(locator, buf, offset);
-						offset += bytesToWrite;
+						this.io.write(this.locator, this.buf, this.offset);
+						this.offset += bytesToWrite;
 					} finally {
 						end(bytesToWrite > 0);
 					}
 					totalWritten += bytesToWrite;
 				}
-				if (offset == 0) {
+				
+				if (this.offset == 0) {
 					/* Create empty object */
-					io.write(locator, "", offset);
+					this.io.write(this.locator, "", this.offset);
 				}
 			} catch (RadosException e) {
 				throw new IOException(e);

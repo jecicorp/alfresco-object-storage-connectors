@@ -30,15 +30,15 @@ public abstract class ByteBufWritableByteChannel extends AbstractInterruptibleCh
 
 	@Override
 	public int write(ByteBuffer src) throws IOException {
-		int start = buffer.writerIndex();
-		buffer.writeBytes(src);
-		return buffer.writerIndex() - start;
+		int start = this.buffer.writerIndex();
+		this.buffer.writeBytes(src);
+		return this.buffer.writerIndex() - start;
 	}
 
 	@Override
 	protected void implCloseChannel() throws IOException {
 		try {
-			implCloseChannel(buffer);
+			implCloseChannel(this.buffer);
 		} finally {
 			this.buffer.release();
 		}
