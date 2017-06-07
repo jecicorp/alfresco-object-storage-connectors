@@ -39,8 +39,6 @@ public class RadosReadableByteChannel extends AbstractInterruptibleChannel imple
 
 	// Offest of byte read from rados
 	private int offset = 0;
-	// Number of byte read from rados
-	private int count;
 
 	public RadosReadableByteChannel(Rados rados, String pool, String locator) {
 		this.rados = rados;
@@ -59,13 +57,13 @@ public class RadosReadableByteChannel extends AbstractInterruptibleChannel imple
 
 	@Override
 	public int read(ByteBuffer dst) throws IOException {
-		int len = dst.remaining();
+		int remaining = dst.remaining();
 		int totalRead = 0;
 		int bytesRead = 0;
 		synchronized (this.readLock) {
 			try {
-				while (totalRead < len) {
-					int bytesToRead = Math.min((len - totalRead), TRANSFER_SIZE);
+				while (totalRead < remaining) {
+					int bytesToRead = Math.min(remaining - totalRead, TRANSFER_SIZE);
 					if (buf.length < bytesToRead) {
 						buf = new byte[bytesToRead];
 					}
@@ -73,20 +71,30 @@ public class RadosReadableByteChannel extends AbstractInterruptibleChannel imple
 					try {
 						begin();
 
-						this.count = this.io.read(this.locator, bytesToRead, this.offset, this.buf);
-						this.offset += this.count;
-
+						bytesRead = this.io.read(this.locator, bytesToRead, this.offset, this.buf);
+						this.offset += bytesRead;
 					} finally {
-						end(bytesRead > 0);
+						end(bytesRead >= 0);
 					}
+
+					// exit when error
 					if (bytesRead < 0) {
 						break;
-					} else {
-						totalRead += bytesRead;
 					}
+
+					totalRead += bytesRead;
+
 					dst.put(buf, 0, bytesRead);
+
+					// No more bytes to read, exit
+					if (bytesRead < bytesToRead) {
+						break;
+					}
+
 				}
-				if ((bytesRead < 0) && (totalRead == 0)) {
+				}
+
+				if ((bytesRead <= 0) && (totalRead == 0)) {
 					return -1;
 				}
 			} catch (RadosException e) {
