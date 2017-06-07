@@ -21,18 +21,25 @@ import java.io.IOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 
+/**
+ * Common Interface for all ObjectStorage implementation
+ * 
+ * @author jeremie.lesage
+ *
+ */
 public interface ObjectStorageService {
 
-	ContentReader getReader(String cephKey) throws IOException;
+	ContentReader getReader(String contentUrl) throws IOException;
 
 	boolean isWriteSupported();
 
-	boolean delete(String cephKey);
+	boolean delete(String contentUrl);
 
-	ContentWriter getWriter(String cephKey) throws IOException;
+	ContentWriter getWriter(String contentUrl) throws IOException;
 
 	/**
 	 * Storage Container or Pool
+	 * 
 	 * @return
 	 */
 	String getContainer();

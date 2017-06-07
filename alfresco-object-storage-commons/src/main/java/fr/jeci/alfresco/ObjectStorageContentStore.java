@@ -19,6 +19,8 @@ package fr.jeci.alfresco;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 
 import org.alfresco.repo.content.AbstractContentStore;
 import org.alfresco.repo.content.ContentStoreCreatedEvent;
@@ -44,10 +46,22 @@ public class ObjectStorageContentStore extends AbstractContentStore
 		implements ApplicationContextAware, ApplicationListener<ApplicationEvent> {
 	private static final Log logger = LogFactory.getLog(ObjectStorageContentStore.class);
 
+	// NUM_LOCKS absolutely must be a power of 2 for the use of locks to be
+	// evenly balanced
+	private static final int NUM_LOCKS = 256;
+	private static final ReentrantReadWriteLock[] LOCKS;
+
 	private ObjectStorageService objectStorageService;
 	private ApplicationContext applicationContext;
 
 	private String storeProtocole = null;
+
+	static {
+		LOCKS = new ReentrantReadWriteLock[NUM_LOCKS];
+		for (int i = 0; i < NUM_LOCKS; i++) {
+			LOCKS[i] = new ReentrantReadWriteLock();
+		}
+	}
 
 	@Override
 	public boolean isWriteSupported() {
@@ -59,12 +73,23 @@ public class ObjectStorageContentStore extends AbstractContentStore
 		if (logger.isDebugEnabled()) {
 			logger.debug(String.format("Content Reader for %s", contentUrl));
 		}
+
+		// Use pool of locks - which one is determined by a hash of the URL.
+		// This will stop the content from being read/cached multiple times from
+		// the backing store
+		// when it should only be read once - cached versions should be returned
+		// after that.
+		ReadLock readLock = readWriteLock(contentUrl).readLock();
+		readLock.lock();
 		try {
 			return this.objectStorageService.getReader(contentUrl);
 		} catch (IOException e) {
 			logger.error(e.getMessage(), e);
-			return null;
+		} finally {
+			readLock.unlock();
 		}
+
+		return null;
 	}
 
 	@Override
@@ -80,8 +105,15 @@ public class ObjectStorageContentStore extends AbstractContentStore
 			return this.objectStorageService.getWriter(contentUrl);
 		} catch (IOException e) {
 			logger.error(e.getMessage(), e);
-			return null;
 		}
+
+		return null;
+	}
+
+	@Override
+	public boolean isContentUrlSupported(String contentUrl) {
+		String startUrl = String.format("%s://%s/", this.storeProtocole, this.objectStorageService.getContainer());
+		return contentUrl.startsWith(startUrl);
 	}
 
 	protected String createNewUrl() {
@@ -94,7 +126,14 @@ public class ObjectStorageContentStore extends AbstractContentStore
 		if (logger.isDebugEnabled()) {
 			logger.debug(String.format("Delete %s", contentUrl));
 		}
-		return this.objectStorageService.delete(contentUrl);
+		ReentrantReadWriteLock readWriteLock = readWriteLock(contentUrl);
+		ReadLock readLock = readWriteLock.readLock();
+		readLock.lock();
+		try {
+			return this.objectStorageService.delete(contentUrl);
+		} finally {
+			readLock.unlock();
+		}
 	}
 
 	@Override
@@ -106,6 +145,22 @@ public class ObjectStorageContentStore extends AbstractContentStore
 			ApplicationContext context = ((ContextRefreshedEvent) event).getApplicationContext();
 			context.publishEvent(new ContentStoreCreatedEvent(this, Collections.<String, Serializable>emptyMap()));
 		}
+	}
+
+	/**
+	 * Get a ReentrantReadWriteLock for a given URL. The lock is from a pool
+	 * rather than per URL, so some contention is expected.
+	 * 
+	 * @param url
+	 *            String
+	 * @return ReentrantReadWriteLock
+	 */
+	public ReentrantReadWriteLock readWriteLock(String url) {
+		return LOCKS[lockIndex(url)];
+	}
+
+	private int lockIndex(String url) {
+		return url.hashCode() & (NUM_LOCKS - 1);
 	}
 
 	@Override
