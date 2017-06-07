@@ -26,11 +26,11 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import com.ceph.rados.Rados;
 
 public class CephContentWriter extends AbstractContentWriter {
-	private long size;
-
 	private final Rados rados;
 	private final String pool;
 	private final String locator;
+
+	private final RadosWritableByteChannel channel;
 
 	public CephContentWriter(Rados rados, String pool, String locator) {
 		super(locator, null);
@@ -45,6 +45,7 @@ public class CephContentWriter extends AbstractContentWriter {
 		if (pool == null) {
 			throw new IllegalArgumentException("pool is null");
 		}
+		this.channel = new RadosWritableByteChannel(rados, pool, locator);
 	}
 
 	@Override
@@ -58,16 +59,12 @@ public class CephContentWriter extends AbstractContentWriter {
 
 	@Override
 	protected WritableByteChannel getDirectWritableChannel() {
-		return new RadosWritableByteChannel(rados, pool, locator);
+		return this.channel;
 	}
 
 	@Override
 	public long getSize() {
-		return this.size;
-	}
-
-	public void setSize(long size) {
-		this.size = size;
+		return this.channel.getOffset();
 	}
 
 }

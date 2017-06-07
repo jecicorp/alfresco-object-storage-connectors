@@ -37,7 +37,7 @@ public class RadosWritableByteChannel extends AbstractInterruptibleChannel imple
 	private Object writeLock = new Object();
 	private final String locator;
 	private final Rados rados;
-	private int offset = 0;
+	private long offset = 0L;
 
 	public RadosWritableByteChannel(Rados rados, String pool, String locator) {
 		this.locator = locator;
@@ -88,6 +88,10 @@ public class RadosWritableByteChannel extends AbstractInterruptibleChannel imple
 		if (this.io != null) {
 			this.rados.ioCtxDestroy(this.io);
 		}
+	}
+
+	public long getOffset() {
+		return offset;
 	}
 
 }
