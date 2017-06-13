@@ -19,7 +19,8 @@ after_success:
 
 deploy:
   provider: releases
-  api_key: ${GH_TOKEN}
+  api_key:
+    secure: GdwzvHcDmW8RZZZzG6FCRMEf/whE9ER1HukxEQNHPuVS+PCCb9hmsCgyauMP7MvL72GCJ+IB13f2x3BYRjdnG8n9yszUlgYvjYeEKCa58GmnDeHUxd+WS3ireZJhnYBSkLN920PI1WUjczye9d/9Tzma+1j2xTt+SPvmDmYueRQ3gulP1119lGJSdicitBh9xTExSwyPVLrhG1z6KHGFOQE7G5c/iiIoZXgErmzak6acp/HwErGYBAcDAOPLZsazzyyoGrnydbyyTWyQxGhOz1cJ0VPF2POnAgQ/GWGPQTBvOaDqN+XVUMTH1eZ6At6OsOI1GI2UqrN10u7WLClWP6KWetXgL6vaG9DztR3O7XO/EyfSEBua1BX4hiiCdd7nkMVWNAIkkntuDpqGSNthejaLYTS6TXWnLydD33ScVSV+XeL+2gyH5E1GT94mGleZvi0jyzglwGoAxLwN+w6ZWNEkymN5Qm+F7hGvWRv2HsqafPENnK9m/tpqJ2TC8X8gEjVIo9DspCChLphkhYTHZBVj0CitSJIUaHvZEqGkU/emorSHEhXNf1smkYpCg0/kJ2OkNYTO9pKY1e+WCrtHM4+t5Zkng3lNePx11s0Qm8bscQZSllCWe0IRMWb2FMbrYUWEC98W7CK/7AiH5PS7P6dv5h+bY2BRP38iWnSVqDk=
   file:
     - "alfresco-ceph-rados/target/*.amp"
     - "alfresco-openio/target/*.amp"
