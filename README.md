@@ -8,6 +8,8 @@ Currently 3 connectors for :
 * [OpenIO](http://openio.io/)
 * [Openstack Swift](http://docs.openstack.org/developer/swift/)
 
+[![Build Status](https://travis-ci.org/jeci-sarl/alfresco-object-storage-connectors.svg?branch=master)](https://travis-ci.org/jeci-sarl/alfresco-object-storage-connectors)
+
 ## License
 
 This project is released under the [LGPL, Version 3](https://www.gnu.org/licenses/lgpl.html).
