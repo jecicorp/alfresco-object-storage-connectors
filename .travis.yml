@@ -1,21 +1,21 @@
 language: bash
 
 services:
-  - docker
+- docker
 
 script:
-  - docker run --rm -v $(pwd):/root/sources -w /root/sources maven:3.3.9-jdk-8 mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+- docker run --rm -v $(pwd):/root/sources -w /root/sources maven:3.3.9-jdk-8 mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 
 after_success:
-  - if [ "$TRAVIS_TAG" ]; then
-    docker build -t jeci/alfresco-platform-ceph-rados:$TRAVIS_TAG -t jeci/alfresco-platform-ceph-rados:latest alfresco-ceph-rados;
-    docker build -t jeci/alfresco-platform-openio:$TRAVIS_TAG -t jeci/alfresco-platform-openio:latest alfresco-openio;
-    docker build -t jeci/alfresco-platform-swift:$TRAVIS_TAG -t jeci/alfresco-platform-swift:latest alfresco-swift;
-    docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
-    docker push jeci/alfresco-platform-ceph-rados;
-    docker push jeci/alfresco-platform-openio;
-    docker push jeci/alfresco-platform-swift;
-    fi
+- if [ "$TRAVIS_TAG" ]; then
+  docker build -t jeci/alfresco-platform-ceph-rados:$TRAVIS_TAG -t jeci/alfresco-platform-ceph-rados:latest alfresco-ceph-rados;
+  docker build -t jeci/alfresco-platform-openio:$TRAVIS_TAG -t jeci/alfresco-platform-openio:latest alfresco-openio;
+  docker build -t jeci/alfresco-platform-swift:$TRAVIS_TAG -t jeci/alfresco-platform-swift:latest alfresco-swift;
+  docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+  docker push jeci/alfresco-platform-ceph-rados;
+  docker push jeci/alfresco-platform-openio;
+  docker push jeci/alfresco-platform-swift;
+  fi
 
 deploy:
   provider: releases
